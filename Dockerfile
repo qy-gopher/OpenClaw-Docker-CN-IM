@@ -5,8 +5,8 @@ FROM node:22-slim
 WORKDIR /app
 
 # 创建orangepi用户
-RUN groupadd -r -g 1000 orangepi && \
-    useradd -r -u 1000 -g orangepi -m -s /bin/bash orangepi
+RUN groupadd -r -g 1001 orangepi && \
+    useradd -r -u 1001 -g orangepi -m -s /bin/bash orangepi
 
 # 安装必要的系统依赖
 RUN apt-get update \
