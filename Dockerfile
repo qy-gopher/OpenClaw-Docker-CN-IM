@@ -54,9 +54,6 @@ RUN mkdir -p /home/node/.openclaw/workspace && \
 # 切换到 node 用户安装插件
 USER node
 
-# OpenClaw已内置飞书插件 - 使用 timeout 防止卡住，忽略错误继续构建
-# RUN timeout 300 openclaw plugins install @m1heng-clawd/feishu || true
-
 # 安装钉钉插件 - 使用 timeout 防止卡住，忽略错误继续构建
 RUN mkdir -p /home/node/.openclaw/extensions && \
     cd /home/node/.openclaw/extensions && \
@@ -71,14 +68,8 @@ RUN cd /tmp && \
     cd qqbot && \
     timeout 300 openclaw plugins install . || true
 
-# 安装企业微信插件 - 使用 timeout 防止卡住，忽略错误继续构建
-RUN timeout 300 openclaw plugins install @sunnoy/wecom || true
-
 # 切换回 root 用户继续后续操作
 USER root
-
-# 如果存在，删除飞书插件目录（OpenClaw 已内置）
-RUN rm -rf /home/node/.openclaw/extensions/feishu
 
 # 确保 extensions 目录权限正确（排除 node_modules 以加快构建速度）
 RUN if [ -d /home/node/.openclaw/extensions ]; then find /home/node/.openclaw/extensions -type d -name node_modules -prune -o -exec chown node:node {} +; fi
