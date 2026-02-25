@@ -67,7 +67,7 @@ RUN mkdir -p /home/node/.openclaw/extensions && \
 
 # 安装 QQ 机器人插件 - 使用 timeout 防止卡住，忽略错误继续构建
 RUN cd /tmp && \
-    git clone https://github.com/justlovemaki/qqbot.git && \
+    git clone https://github.com/sliverp/qqbot.git && \
     cd qqbot && \
     timeout 300 openclaw plugins install . || true
 
