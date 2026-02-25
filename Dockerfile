@@ -4,6 +4,10 @@ FROM node:22-slim
 # 设置工作目录
 WORKDIR /app
 
+# 创建orangepi用户
+RUN groupadd -r -g 1000 orangepi && \
+    useradd -r -u 1000 -g orangepi -m -s /bin/bash orangepi
+
 # 安装必要的系统依赖
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -22,6 +26,7 @@ RUN apt-get update \
     tini \
     unzip \
     websockify \
+    neovim \
   && rm -rf /var/lib/apt/lists/*
 
 # 更新 npm 到最新版本
@@ -47,47 +52,16 @@ RUN npm install -g playwright-extra puppeteer-extra-plugin-stealth
 # 安装 bird
 RUN npm install -g @steipete/bird
 
-# 创建配置目录并设置权限
-RUN mkdir -p /home/node/.openclaw/workspace && \
-    chown -R node:node /home/node
-
-# 切换到 node 用户安装插件
-USER node
+# 切换到 orangepi 用户安装插件
+USER orangepi
 
 # 安装钉钉插件 - 使用 timeout 防止卡住，忽略错误继续构建
-RUN mkdir -p /home/node/.openclaw/extensions && \
-    cd /home/node/.openclaw/extensions && \
-    git clone https://github.com/soimy/openclaw-channel-dingtalk.git && \
-    cd openclaw-channel-dingtalk && \
-    npm install && \
-    timeout 300 openclaw plugins install -l . || true
+RUN openclaw plugins install @soimy/dingtalk
 
 # 安装 QQ 机器人插件 - 使用 timeout 防止卡住，忽略错误继续构建
-RUN cd /tmp && \
-    git clone https://github.com/sliverp/qqbot.git && \
-    cd qqbot && \
-    timeout 300 openclaw plugins install . || true
-
-# 切换回 root 用户继续后续操作
-USER root
-
-# 确保 extensions 目录权限正确（排除 node_modules 以加快构建速度）
-RUN if [ -d /home/node/.openclaw/extensions ]; then find /home/node/.openclaw/extensions -type d -name node_modules -prune -o -exec chown node:node {} +; fi
-
-# 复制初始化脚本
-COPY ./init.sh /usr/local/bin/init.sh
-RUN chmod +x /usr/local/bin/init.sh
-
-# 设置基础环境变量
-ENV HOME=/home/node \
-    TERM=xterm-256color \
-    NODE_PATH=/usr/local/lib/node_modules
-
-# 暴露端口
-EXPOSE 18789 18790
+RUN openclaw plugins install @sliverp/qqbot@latest
 
 # 设置工作目录为 home
-WORKDIR /home/node
+WORKDIR /home/orangepi
 
-# 使用初始化脚本作为入口点（以 root 运行以便修复权限）
-ENTRYPOINT ["/bin/bash", "/usr/local/bin/init.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "openclaw gateway run"]
