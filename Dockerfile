@@ -17,9 +17,7 @@ WORKDIR /app
 # 2. 安装系统依赖 (合并层，移除冗余包)
 # 3. 安装 Bun 和全局 Node 工具 (合并层，减少镜像层数)
 # 4. 安装 Playwright 系统依赖和浏览器
-RUN groupadd -r -g 1001 orangepi && \
-    useradd -r -u 1001 -g orangepi -m -s /bin/bash orangepi && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
@@ -61,10 +59,10 @@ RUN groupadd -r -g 1001 orangepi && \
     chmod -R 755 /usr/local/lib/node_modules
 
 # 切换到非 root 用户
-USER orangepi
+USER node
 
 # 设置用户家目录为工作目录
-WORKDIR /home/orangepi
+WORKDIR /home/node
 
 # 安装插件 (保留容错逻辑，但优化写法)
 # 注意：生产环境建议去掉 || true 以便构建失败时能及时发现
