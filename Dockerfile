@@ -51,11 +51,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     # 清理 npm 缓存
     npm cache clean --force && \
-    # 创建 Playwright 缓存目录并授权给 orangepi 用户
+    # 创建 Playwright 缓存目录并授权给 node 用户
     mkdir -p /ms-playwright && \
-    chown -R orangepi:orangepi /ms-playwright && \
-    # 修复全局 npm 包权限，允许 orangepi 用户安装插件
-    chown -R orangepi:orangepi /usr/local/lib/node_modules && \
+    chown -R node:node /ms-playwright && \
+    # 修复全局 npm 包权限，允许 node 用户安装插件
+    chown -R node:node /usr/local/lib/node_modules && \
     chmod -R 755 /usr/local/lib/node_modules
 
 # 切换到非 root 用户
