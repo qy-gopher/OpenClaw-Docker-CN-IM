@@ -58,16 +58,21 @@ RUN apt-get update && \
     chown -R node:node /usr/local/lib/node_modules && \
     chmod -R 755 /usr/local/lib/node_modules
 
+COPY ./start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
 # 切换到非 root 用户
 USER node
-
-# 设置用户家目录为工作目录
-WORKDIR /home/node
 
 # 安装插件 (保留容错逻辑，但优化写法)
 # 注意：生产环境建议去掉 || true 以便构建失败时能及时发现
 RUN openclaw plugins install @soimy/dingtalk || echo "Warning: DingTalk plugin install failed" && \
     openclaw plugins install @sliverp/qqbot@latest || echo "Warning: QQBot plugin install failed"
 
+COPY openclaw.json /home/node/.openclaw/openclaw.json
+
+# 设置用户家目录为工作目录
+WORKDIR /home/node
+
 # 设置入口点
-ENTRYPOINT ["/usr/bin/tini", "--", "openclaw", "gateway", "run"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/start.sh"]
